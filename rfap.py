@@ -32,11 +32,20 @@ k0 = 2 * np.pi / x_max * 5
 k = 2 * np.pi * np.fft.fftfreq(n, x_step)
 
 wave = np.exp(- x**2 / (2*𝜎**2)) * np.exp(1j*k0*x)
-# wave = np.exp(1j*k0*x)
+
+
+# Square well potential
+sw = np.zeros_like(x)
+# depth
+sw[0] = sw[-1] = 1000*k0**2
 
 # Schrodinger equation (or first order time derivarive)
 def Schrodinger_eqn(t, Ψ):
-    return (1j / hbar) * hbar**2/(2 * m) * ifft(-(k**2) * fft(Ψ)) #+ (-1j / hbar) * 1j*x**3 * Ψ
+    r = np.linspace(0, x_max, 1024, endpoint=False)
+    KΨ = -hbar**2/(2 * m) * ifft(-(k**2) * fft(Ψ))
+    VΨ = sw * Ψ
+    # I dunno #+ (-1j / hbar) * 1j*x**3 * Ψ
+    return (-1j / hbar) * (KΨ  + VΨ) 
 
 def Runge_Kutta(t, delta_t, Ψ):
     k1 = Schrodinger_eqn(t, Ψ)
@@ -47,12 +56,12 @@ def Runge_Kutta(t, delta_t, Ψ):
 
 i = 0
 t = 0
-t_final = 1
+t_final = 5
 delta_t = 0.0001
 
 while t < t_final:
 
-    if not i % 100:
+    if not i % 400:
         plt.plot(x, np.real(wave), label="real part")
         plt.plot(x, np.imag(wave), label="imaginary part")
         plt.xlim(-x_max, x_max)
